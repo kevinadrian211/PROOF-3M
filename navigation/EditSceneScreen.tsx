@@ -1,35 +1,59 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import axios from 'axios'; // Asegúrate de tener axios instalado
+import { RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 // Definir un tipo para el objeto de escena
 interface Scene {
-  title: string;
+  id: number; // Asegúrate de que el ID esté presente para la actualización
+  titles: string;
   duration: string;
-  characters: string[];
+  filmId: number; // ID de la película a la que pertenece la escena
 }
 
-// Definir las props del componente
-interface EditSceneScreenProps {
-  route: {
-    params: {
-      scene: Scene;
-    };
-  };
-  navigation: {
-    goBack: () => void;
-  };
-}
+// Definir el tipo para los parámetros de la ruta
+type RootStackParamList = {
+  EditScene: { scene: Scene };
+};
 
-const EditSceneScreen: React.FC<EditSceneScreenProps> = ({ route, navigation }) => {
+type EditSceneScreenRouteProp = RouteProp<RootStackParamList, 'EditScene'>;
+type EditSceneScreenNavigationProp = StackNavigationProp<RootStackParamList, 'EditScene'>;
+
+type Props = {
+  route: EditSceneScreenRouteProp;
+  navigation: EditSceneScreenNavigationProp;
+};
+
+const EditSceneScreen: React.FC<Props> = ({ route, navigation }) => {
   const { scene } = route.params;
-  const [title, setTitle] = useState<string>(scene.title);
-  const [duration, setDuration] = useState<string>(scene.duration);
-  const [characters, setCharacters] = useState<string>(scene.characters.join(', '));
+  const [titles, setTitles] = useState<string>(scene.titles);
+  const [duration, setDuration] = useState<string>(scene.duration.toString());
 
-  const handleSave = () => {
-    // Aquí deberías actualizar los datos de la escena
-    // Por ahora, solo navegamos de vuelta
-    navigation.goBack();
+  const handleSave = async () => {
+    if (!titles || !duration) {
+      Alert.alert('Validation Error', 'Please fill in all fields.');
+      return;
+    }
+
+    try {
+      // Enviar los datos actualizados de la escena al backend
+      const response = await axios.put(`http://localhost:8082/scenes/${scene.id}`, {
+        titles,
+        duration: parseInt(duration),
+        films_id: scene.filmId, // Usar 'films_id' para referenciar la película
+      });
+
+      if (response.status === 200) {
+        Alert.alert('Success', 'Scene updated successfully!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', 'Failed to update scene.');
+      }
+    } catch (error) {
+      console.error('Error updating scene:', error);
+      Alert.alert('Error', 'An error occurred while updating the scene.');
+    }
   };
 
   return (
@@ -37,8 +61,8 @@ const EditSceneScreen: React.FC<EditSceneScreenProps> = ({ route, navigation }) 
       <Text style={styles.header}>Edit Scene</Text>
       <TextInput
         style={styles.input}
-        value={title}
-        onChangeText={setTitle}
+        value={titles}
+        onChangeText={setTitles}
         placeholder="Title"
       />
       <TextInput
@@ -46,12 +70,7 @@ const EditSceneScreen: React.FC<EditSceneScreenProps> = ({ route, navigation }) 
         value={duration}
         onChangeText={setDuration}
         placeholder="Duration"
-      />
-      <TextInput
-        style={styles.input}
-        value={characters}
-        onChangeText={setCharacters}
-        placeholder="Characters (comma separated)"
+        keyboardType="numeric"
       />
       <Button title="Save" onPress={handleSave} />
     </View>

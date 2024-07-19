@@ -1,47 +1,44 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp } from '@react-navigation/native';
+import axios from 'axios'; // Asegúrate de tener axios instalado
 
-// Define el tipo para los parámetros de la ruta
-type RootStackParamList = {
-  AddCharacter: { scene: { title: string } };
-};
-
-type AddCharacterScreenRouteProp = RouteProp<RootStackParamList, 'AddCharacter'>;
-type AddCharacterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'AddCharacter'>;
-
-type Props = {
-  route: AddCharacterScreenRouteProp;
-  navigation: AddCharacterScreenNavigationProp;
-};
-
-const AddCharacterScreen: React.FC<Props> = ({ route, navigation }) => {
+const AddCharacterScreen = ({ route, navigation }: any) => {
   const { scene } = route.params;
-  const [name, setName] = useState('');
+  const [namec, setName] = useState('');
   const [scenesCount, setScenesCount] = useState('');
 
-  const handleAdd = () => {
-    const scenes = parseInt(scenesCount, 10);
-
-    if (!name || isNaN(scenes)) {
-      Alert.alert('Validation Error', 'Please fill in all fields and ensure number of scenes is valid.');
+  const handleAdd = async () => {
+    if (!namec || !scenesCount) {
+      Alert.alert('Validation Error', 'Please fill in all fields.');
       return;
     }
 
-    // Aquí deberías agregar el personaje al estado de la escena
-    console.log(`Character added: ${name}, Scenes count: ${scenes}`);
+    try {
+      // Enviar los datos del nuevo personaje al backend
+      const response = await axios.post('http://localhost:8082/characters', {
+        namec,
+        scenes_count: scenesCount,
+        scenes_id: scene.id, // Usar 'scenes_id' para referenciar la escena
+      });
 
-    // Navegar de vuelta después de agregar
-    navigation.goBack();
+      if (response.status === 201) {
+        Alert.alert('Success', 'Character added successfully!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', 'Failed to add character.');
+      }
+    } catch (error) {
+      console.error('Error adding character:', error);
+      Alert.alert('Error', 'An error occurred while adding the character.');
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Add Character to Scene {scene.title}</Text>
+      <Text style={styles.header}>Add Character to Scene: {scene.title}</Text>
       <TextInput
         style={styles.input}
-        value={name}
+        value={namec}
         onChangeText={setName}
         placeholder="Name"
       />
@@ -49,7 +46,7 @@ const AddCharacterScreen: React.FC<Props> = ({ route, navigation }) => {
         style={styles.input}
         value={scenesCount}
         onChangeText={setScenesCount}
-        placeholder="Number of Scenes"
+        placeholder="Scenes Count"
         keyboardType="numeric"
       />
       <Button title="Add Character" onPress={handleAdd} />

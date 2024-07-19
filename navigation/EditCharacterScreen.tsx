@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import axios from 'axios'; // Asegúrate de tener axios instalado
 import { RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-// Define el tipo para los parámetros de la ruta
+// Definir un tipo para el objeto de personaje
+interface Character {
+  id: number; // Asegúrate de que el ID esté presente para la actualización
+  namec: string; // Cambiado para coincidir con el nombre de campo en la base de datos
+  scenes_count: number; // Cambiado para coincidir con el nombre de campo en la base de datos
+}
+
+// Definir el tipo para los parámetros de la ruta
 type RootStackParamList = {
-  EditCharacter: { character: { name: string; scenes: number } };
+  EditCharacter: { character: Character };
 };
 
 type EditCharacterScreenRouteProp = RouteProp<RootStackParamList, 'EditCharacter'>;
@@ -18,22 +26,34 @@ type Props = {
 
 const EditCharacterScreen: React.FC<Props> = ({ route, navigation }) => {
   const { character } = route.params;
-  const [name, setName] = useState(character.name);
-  const [scenesCount, setScenesCount] = useState(character.scenes.toString());
+  const [namec, setName] = useState<string>(character.namec);
+  const [scenes_count, setScenesCount] = useState<string>(character.scenes_count.toString());
 
-  const handleSave = () => {
-    const scenes = parseInt(scenesCount, 10);
+  const handleSave = async () => {
+    const scenesCount = parseInt(scenes_count, 10);
 
-    if (!name || isNaN(scenes)) {
-      Alert.alert('Validation Error', 'Please fill in all fields and ensure number of scenes is valid.');
+    if (!namec || isNaN(scenesCount)) {
+      Alert.alert('Validation Error', 'Please fill in all fields and ensure the number of scenes is valid.');
       return;
     }
 
-    // Aquí deberías actualizar los datos del personaje
-    console.log(`Character updated: ${name}, Scenes count: ${scenes}`);
+    try {
+      // Enviar los datos actualizados del personaje al backend
+      const response = await axios.put(`http://localhost:8082/characters/${character.id}`, {
+        namec, // Usar 'namec' para coincidir con el nombre de campo en la base de datos
+        scenes_count: scenesCount, // Usar 'scenes_count' para coincidir con el nombre de campo en la base de datos
+      });
 
-    // Navegar de vuelta después de guardar
-    navigation.goBack();
+      if (response.status === 200) {
+        Alert.alert('Success', 'Character updated successfully!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', 'Failed to update character.');
+      }
+    } catch (error) {
+      console.error('Error updating character:', error);
+      Alert.alert('Error', 'An error occurred while updating the character.');
+    }
   };
 
   return (
@@ -41,13 +61,13 @@ const EditCharacterScreen: React.FC<Props> = ({ route, navigation }) => {
       <Text style={styles.header}>Edit Character</Text>
       <TextInput
         style={styles.input}
-        value={name}
+        value={namec}
         onChangeText={setName}
         placeholder="Name"
       />
       <TextInput
         style={styles.input}
-        value={scenesCount}
+        value={scenes_count}
         onChangeText={setScenesCount}
         placeholder="Number of Scenes"
         keyboardType="numeric"

@@ -1,23 +1,36 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import axios from 'axios'; // Asegúrate de tener axios instalado
 
 const AddSceneScreen = ({ route, navigation }: any) => {
   const { film } = route.params;
-  const [title, setTitle] = useState('');
+  const [titles, setTitle] = useState('');
   const [duration, setDuration] = useState('');
-  const [characters, setCharacters] = useState('');
 
-  const handleAdd = () => {
-    if (!title || !duration || !characters) {
+  const handleAdd = async () => {
+    if (!titles || !duration) {
       Alert.alert('Validation Error', 'Please fill in all fields.');
       return;
     }
 
-    // Aquí deberías agregar la escena al estado del film
-    console.log(`Scene added: ${title}, ${duration}, ${characters.split(',').map(c => c.trim()).join(', ')}`);
+    try {
+      // Enviar los datos de la nueva escena al backend
+      const response = await axios.post('http://localhost:8082/scenes', {
+        titles,
+        duration,
+        films_id: film.id, // Usar 'films_id' para referenciar la película
+      });
 
-    // Navegar de vuelta después de agregar
-    navigation.goBack();
+      if (response.status === 201) {
+        Alert.alert('Success', 'Scene added successfully!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', 'Failed to add scene.');
+      }
+    } catch (error) {
+      console.error('Error adding scene:', error);
+      Alert.alert('Error', 'An error occurred while adding the scene.');
+    }
   };
 
   return (
@@ -25,7 +38,7 @@ const AddSceneScreen = ({ route, navigation }: any) => {
       <Text style={styles.header}>Add Scene to {film.title}</Text>
       <TextInput
         style={styles.input}
-        value={title}
+        value={titles}
         onChangeText={setTitle}
         placeholder="Title"
       />
@@ -35,12 +48,6 @@ const AddSceneScreen = ({ route, navigation }: any) => {
         onChangeText={setDuration}
         placeholder="Duration"
         keyboardType="numeric"
-      />
-      <TextInput
-        style={styles.input}
-        value={characters}
-        onChangeText={setCharacters}
-        placeholder="Characters (comma separated)"
       />
       <Button title="Add Scene" onPress={handleAdd} />
     </View>

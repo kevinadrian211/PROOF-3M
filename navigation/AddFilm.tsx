@@ -1,22 +1,36 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import axios from 'axios'; // Asegúrate de tener axios instalado
 
 const AddFilmScreen = ({ navigation }: any) => {
-  const [title, setTitle] = useState('');
+  const [titlef, setTitle] = useState('');
   const [duration, setDuration] = useState('');
   const [description, setDescription] = useState('');
 
-  const handleAdd = () => {
-    if (!title || !duration || !description) {
+  const handleAdd = async () => {
+    if (!titlef || !duration || !description) {
       Alert.alert('Validation Error', 'Please fill in all fields.');
       return;
     }
 
-    // Aquí deberías agregar la lógica para agregar la película al estado
-    console.log(`Film added: ${title}, ${duration}, ${description}`);
+    try {
+      // Enviar los datos al backend
+      const response = await axios.post('http://localhost:8082/films', {
+        titlef,
+        duration,
+        description,
+      });
 
-    // Navegar de vuelta después de agregar
-    navigation.goBack();
+      if (response.status === 201) {
+        Alert.alert('Success', 'Film added successfully!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', 'Failed to add film.');
+      }
+    } catch (error) {
+      console.error('Error adding film:', error);
+      Alert.alert('Error', 'An error occurred while adding the film.');
+    }
   };
 
   return (
@@ -24,7 +38,7 @@ const AddFilmScreen = ({ navigation }: any) => {
       <Text style={styles.header}>Add Film</Text>
       <TextInput
         style={styles.input}
-        value={title}
+        value={titlef}
         onChangeText={setTitle}
         placeholder="Title"
       />

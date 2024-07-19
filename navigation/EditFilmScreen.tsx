@@ -1,23 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import axios from 'axios'; // Asegúrate de tener axios instalado
 
 const EditFilmScreen = ({ route, navigation }: any) => {
   const { film } = route.params;
-  const [title, setTitle] = useState(film.title);
-  const [duration, setDuration] = useState(film.duration);
-  const [description, setDescription] = useState(film.description);
+  const [titlef, setTitle] = useState(film.titlef);
+  const [duration, setDuration] = useState(film.duration.toString());
+  const [description, setDescription] = useState(film.description || '');
 
-  const handleSave = () => {
-    if (!title || !duration || !description) {
+  const handleUpdate = async () => {
+    if (!titlef || !duration) {
       Alert.alert('Validation Error', 'Please fill in all fields.');
       return;
     }
 
-    // Aquí deberías actualizar los datos de la película
-    console.log(`Film updated: ${title}, ${duration}, ${description}`);
+    try {
+      // Enviar los datos actualizados del film al backend
+      const response = await axios.put(`http://localhost:8082/films/${film.id}`, {
+        titlef,
+        duration: parseInt(duration),
+        description,
+      });
 
-    // Navegar de vuelta después de guardar
-    navigation.goBack();
+      if (response.status === 200) {
+        Alert.alert('Success', 'Film updated successfully!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', 'Failed to update film.');
+      }
+    } catch (error) {
+      console.error('Error updating film:', error);
+      Alert.alert('Error', 'An error occurred while updating the film.');
+    }
   };
 
   return (
@@ -25,7 +39,7 @@ const EditFilmScreen = ({ route, navigation }: any) => {
       <Text style={styles.header}>Edit Film</Text>
       <TextInput
         style={styles.input}
-        value={title}
+        value={titlef}
         onChangeText={setTitle}
         placeholder="Title"
       />
@@ -43,7 +57,7 @@ const EditFilmScreen = ({ route, navigation }: any) => {
         placeholder="Description"
         multiline
       />
-      <Button title="Save" onPress={handleSave} />
+      <Button title="Update Film" onPress={handleUpdate} />
     </View>
   );
 };
