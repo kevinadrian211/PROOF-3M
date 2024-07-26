@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Button, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
-import { DeleteFilmButton } from './deletecomponents';
+import DeleteFilmButton from '../components/deleteFilm';
 
 const FilmScreen = ({ navigation }: { navigation: any }) => {
   const [films, setFilms] = useState<any[]>([]);

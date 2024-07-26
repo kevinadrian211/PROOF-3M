@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Button, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
-import { DeleteCharacterButton } from './deletecomponents';
+import DeleteCharacterButton from '../components/deleteCharacter';
 
 const CharacterScreen = ({ route, navigation }: { route: any; navigation: any }) => {
   const { sceneId } = route.params;

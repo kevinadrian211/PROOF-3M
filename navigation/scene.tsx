@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Button, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
-import { DeleteSceneButton } from './deletecomponents';
+import DeleteSceneButton from '../components/deleteScene';
 
 const SceneScreen = ({ route, navigation }: { route: any; navigation: any }) => {
   const { filmId } = route.params;

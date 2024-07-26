@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import axios from 'axios'; // Asegúrate de tener axios instalado
+import api from '../config/apiConfig';
 
-const EditFilmScreen = ({ route, navigation }: any) => {
+const EditFilmScreen = ({ route, navigation }: { route: any; navigation: any }) => {
   const { film } = route.params;
   const [titlef, setTitle] = useState(film.titlef);
   const [duration, setDuration] = useState(film.duration.toString());
@@ -15,16 +15,16 @@ const EditFilmScreen = ({ route, navigation }: any) => {
     }
 
     try {
-      // Enviar los datos actualizados del film al backend
-      const response = await axios.put(`http://localhost:8082/films/${film.id}`, {
+      // Enviar los datos actualizados del film al backend usando apiConfig
+      const response = await api.put(`/films/${film.id}`, {
         titlef,
-        duration: parseInt(duration),
+        duration: parseInt(duration, 10),
         description,
       });
 
       if (response.status === 200) {
         Alert.alert('Success', 'Film updated successfully!');
-        navigation.goBack();
+        navigation.goBack(); // O redirige a otra pantalla según tu flujo de navegación
       } else {
         Alert.alert('Error', 'Failed to update film.');
       }

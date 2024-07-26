@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import axios from 'axios'; // Asegúrate de tener axios instalado
+import api from '../config/apiConfig'; // Asegúrate de que la ruta sea correcta
 
-const AddFilmScreen = ({ navigation }: any) => {
+const AddFilmScreen = ({ navigation }: { navigation: any }) => {
   const [titlef, setTitle] = useState('');
   const [duration, setDuration] = useState('');
   const [description, setDescription] = useState('');
@@ -14,8 +14,8 @@ const AddFilmScreen = ({ navigation }: any) => {
     }
 
     try {
-      // Enviar los datos al backend
-      const response = await axios.post('http://localhost:8082/films', {
+      // Enviar los datos al backend usando la configuración de apiConfig
+      const response = await api.post('/films', {
         titlef,
         duration,
         description,
